@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">K线测试</string>
+
+    <string name="more">更多</string>
+    <string name="index">指标</string>
+    <string name="hide">隐藏</string>
+    <string name="main">主图</string>
+    <string name="child">副图</string>
+    <string name="ts_min">30分钟</string>
+    <string name="weekly">一周</string>
+    <string name="jan">一月</string>
+</resources>

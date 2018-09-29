@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#1d1f26</color>
+    <color name="colorPrimaryDark">#1d1f26</color>
+    <color name="colorAccent">#efb350</color>
+    <color name="main_bg_kline_hover">#0C0D11</color>
+    <color name="white">#ffffff</color>
+    <color name="main_head_bg">#2D2F39</color><!--应用头部背景色-->
+    <color name="color_font_kline">#535356</color>
+    <color name="main_font_green">#03C087</color><!--绿色-->
+</resources>
