@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,15 @@ import java.util.Locale;
  */
 public class Utils {
 
+    public static JSONObject buildGetBodyJson(String symbol) {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("symbol", symbol);
+            return obj;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
     /**
      * 数据的解析赋值
      *

@@ -86,19 +86,17 @@ setText();
             }
         });
     }
-
+    private List<KLineEntity> kMoreList = new ArrayList<>();
     private void setText(){
         KLineEntity entity = new Gson().fromJson(text,KLineEntity.class);
-       final List<KLineEntity> datas = new ArrayList<>();
-        datas.add(entity);
+        kMoreList.add(entity);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mAdapter.addHeaderData(datas);
-                        mAdapter.notifyDataSetChanged();
+                       mAdapter.addFooterData(kMoreList);
                         mKChartView.refreshEnd();
                     }
                 });
@@ -143,6 +141,7 @@ setText();
             public void run() {
                 final ArrayList<KLineEntity> datas = getAll(TextOneActivity.this,"ibm.json");
               //  final ArrayList<KLineEntity> datas = getAll();
+                kMoreList = datas;
                 Log.d("jiejie","---" + datas.size()+ "---"+ datas.get(0).getOpenPrice() + " --" + datas.get(0).getRsi()+"  " + datas.get(0).getK());
                 DataHelper.calculate(datas);
                 runOnUiThread(new Runnable() {

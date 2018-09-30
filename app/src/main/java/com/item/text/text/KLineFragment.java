@@ -124,7 +124,6 @@ public class KLineFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
             mKChartView.refreshEnd();
         }
-
     }
 
     /**

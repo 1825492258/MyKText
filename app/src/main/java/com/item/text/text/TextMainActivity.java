@@ -26,7 +26,13 @@ import com.item.text.R;
 import com.item.text.data.KLineBean;
 import com.item.text.data.KSocketBean;
 import com.item.text.data.Utils;
+import com.item.text.socket.ISocket;
+import com.item.text.socket.SocketMessage;
+import com.item.text.socket.SocketResponse;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -108,6 +114,9 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_main);
         ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
+        EventBus.getDefault().post(new SocketMessage(0, ISocket.CMD.SUBSCRIBE_EXCHANGE_TRADE,
+                Utils.buildGetBodyJson("BTC/USDT").toString().getBytes()));
         mPresenter = new KlinePresenterImpl(this);
         isVertical = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
         fragments.add(KLineFragment.newInstance(true, 2)); // 这个是分时的
@@ -128,46 +137,34 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
 
     private ArrayList<KLineEntity> kMoreEntity = new ArrayList<>(); // 推送来的数据
 
-    /**
-     * 添加数据有问题
-     */
-    private void textSocket() {
-        // 解析需要在子线程
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // 这个是推送来的数据
-                String response = "{\"closePrice\":6562.0700,\"count\":15,\"highestPrice\":6562.07000,\"lowestPrice\":6561.57000000,\"openPrice\":6561.070,\"period\":\"1min\",\"time\":1538120400000,\"turnover\":11639.097172000,\"volume\":1.789}";
-                final KSocketBean kBean = new Gson().fromJson(response, KSocketBean.class);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (kBean == null) return;
-                       /// if ("1min".equals(kBean.getPeriod())) { // 表示是一分钟推送下的数据
-                            kMoreEntity.clear();
-                            KLineEntity lineEntity = new KLineEntity();
-                            lineEntity.Date = kBean.getTime();
-                            lineEntity.Open = kBean.getOpenPrice();
-                            lineEntity.Close = kBean.getClosePrice();
-                            lineEntity.High = kBean.getHighestPrice();
-                            lineEntity.Low = kBean.getLowestPrice();
-                            lineEntity.Volume = kBean.getVolume();
-                            kMoreEntity.add(lineEntity);
-                            DataHelper.calculate(kMoreEntity);
-                            KLineFragment fragment = (KLineFragment) fragments.get(1);
-                            fragment.setKHeaderData(kMoreEntity,false);
-                           // fragment.setKHeaderData(DataHelper.getALL(kMoreEntity), false);
-                   //     }
-                    }
-                });
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSocketMessage(SocketResponse response){
+        if(response.getCmd() == ISocket.CMD.PUSH_EXCHANGE_KLINE)   {
+            KSocketBean kBean = new Gson().fromJson(response.getResponse(), KSocketBean.class);
+            Log.d("jiejie", "K--" + response.getResponse());
+            if (kBean == null) return;
+            if ("1min".equals(kBean.getPeriod())) { // 表示推送下来的是 1min的 并且要判断推送来的信息和当前的币是不是一样
+                KLineEntity lineEntity = new KLineEntity();
+                lineEntity.Date = kBean.getTime();
+                lineEntity.Open = kBean.getOpenPrice();
+                lineEntity.Close = kBean.getClosePrice();
+                lineEntity.High = kBean.getHighestPrice();
+                lineEntity.Low = kBean.getLowestPrice();
+                lineEntity.Volume = kBean.getVolume();
+                kMoreEntity.add(lineEntity);
+                DataHelper.calculate(kMoreEntity);
+                KLineFragment fragment = (KLineFragment) fragments.get(1);
+                //fragment.setKHeaderData(kMoreEntity,false); // 按理说应该用这个方法，但是会出现线划不来的感觉，所以采用下面的方法
+                fragment.setKFooterData(kMoreEntity,false);
             }
-        }).start();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mPresenter != null) mPresenter.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     private int index;
@@ -451,6 +448,7 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         final ArrayList<KLineEntity> data = getAll(obj);
         if (data != null)
             Log.d("jiejie", "da--" + data.size() + "---" + currentTabIndex);
+        if(currentTabIndex == 1) kMoreEntity = data; // 这里新加一条数据有问题，所以尝试这么写的
         // 下面的设置一定需要在主线程中设置 否则会有问题
         new Thread(new Runnable() {
             @Override
