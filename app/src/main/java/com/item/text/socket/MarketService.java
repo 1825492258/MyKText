@@ -33,7 +33,7 @@ public class MarketService extends Service {
     private static final int version = 1;
     private static final String terminal = "1001";  //安卓:1001,苹果:1002,WEB:1003,PC:1004
     //public static final String ip = "13.231.109.26";//行情  测试
-    public static final String ip = "47.74.212.105";// 易币  测试
+    public static final String ip = "47.75.113.140";// 易币  测试
     private static final int port = 28901;//行情
     private DataInputStream dis = null;
     private DataOutputStream dos = null;

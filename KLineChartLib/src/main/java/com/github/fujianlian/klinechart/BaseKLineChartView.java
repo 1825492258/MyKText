@@ -956,7 +956,12 @@ public abstract class BaseKLineChartView extends ScrollAndScaleView {
         if (translateX < midValue) {
             return indexOfTranslateX(translateX, start, mid);
         } else if (translateX > midValue) {
-            return indexOfTranslateX(translateX, mid, end);
+            try {
+                return indexOfTranslateX(translateX, mid, end);
+            }catch (Exception e){
+                return 0;
+            }
+
         } else {
             return mid;
         }

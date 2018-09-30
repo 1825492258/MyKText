@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class KlinePresenterImpl implements KlineContract.Presenter {
 
     private KlineContract.View view;
-    private String url = "http://api.guanxiaofei.com/market/history";
+    private String url = "http://api.coin-dy.com/market/history";
     private boolean isInitCache;
 
     KlinePresenterImpl(KlineContract.View view) {
@@ -32,7 +32,7 @@ public class KlinePresenterImpl implements KlineContract.Presenter {
     public void KData(HashMap<String, String> map) {
         if (view != null) view.showDialog();
         OkGo.<String>post(url)
-                .cacheKey("text" + map.get("symbol") + map.get("resolution")) // 这句很重要
+                .cacheKey("text" + map.get("symbol") + map.get("resolution")) // 这句很重要，设置对应的缓存的Key
                 .cacheMode(CacheMode.FIRST_CACHE_THEN_REQUEST) // 缓存模式先使用缓存然后使用网络数据
                 .params(map).execute(new StringCallback() {
             @Override
