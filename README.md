@@ -52,3 +52,31 @@
             mKChartView.setChildDraw(type);
         }
     }
+
+### 在Activity获取数据后，直接对Fragment进行赋值
+    /**
+     * 获取的数据
+     */
+    @Override
+    public void KDataSuccess(JSONArray obj) {
+        final ArrayList<KLineEntity> data = getAll(obj);
+        if (data != null){
+            Log.d("jiejie", "da--" + data.size() + "---" + currentTabIndex);
+            if(currentTabIndex == 1) kMoreEntity = data; // 这里新加一条数据有问题，所以尝试这么写的
+        }
+        // 下面的设置一定需要在主线程中设置 否则会有问题
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        KLineFragment fragment = (KLineFragment) fragments.get(currentTabIndex); // 找到对应的Fragment，再在对应的Fragment上改变数据
+                        fragment.setMainDrawType(mainType); // 设置主图
+                        fragment.setChildDrawType(childType); // 设置幅图
+                        fragment.setKFooterData(data, true); // 添加数据
+                    }
+                });
+            }
+        }).start();
+    }
