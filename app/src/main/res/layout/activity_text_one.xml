@@ -129,6 +129,10 @@
             android:gravity="center"
             android:text="k线图"
             android:textColor="@color/font_text_selector" />
+        <Button
+            android:layout_width="wrap_content"
+            android:id="@+id/text"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <View

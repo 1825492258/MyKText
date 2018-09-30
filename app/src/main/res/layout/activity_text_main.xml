@@ -267,6 +267,7 @@
         <Button
             android:id="@+id/btnTextOne"
             android:layout_marginTop="120dp"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:text="1分添一条数据"
             android:layout_height="wrap_content" />

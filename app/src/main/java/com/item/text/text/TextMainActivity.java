@@ -124,29 +124,26 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         // 默认加载1分钟的数据
         loadKineData(1);
         // 这里模拟推送，在1分钟时添加一条数据
-        findViewById(R.id.btnTextOne).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                textSocket();
-            }
-        });
     }
 
     private ArrayList<KLineEntity> kMoreEntity = new ArrayList<>(); // 推送来的数据
 
+    /**
+     * 添加数据有问题
+     */
     private void textSocket() {
         // 解析需要在子线程
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // 这个是推送来的数据
-                String response = "{\"closePrice\":6503.930,\"count\":15,\"highestPrice\":6506.54000,\"lowestPrice\":6503.870,\"openPrice\":6506.540,\"period\":\"1min\",\"time\":1538120400000,\"turnover\":11639.097172000,\"volume\":1.789}";
+                String response = "{\"closePrice\":6562.0700,\"count\":15,\"highestPrice\":6562.07000,\"lowestPrice\":6561.57000000,\"openPrice\":6561.070,\"period\":\"1min\",\"time\":1538120400000,\"turnover\":11639.097172000,\"volume\":1.789}";
                 final KSocketBean kBean = new Gson().fromJson(response, KSocketBean.class);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (kBean == null) return;
-                        if ("1min".equals(kBean.getPeriod())) { // 表示是一分钟推送下的数据
+                       /// if ("1min".equals(kBean.getPeriod())) { // 表示是一分钟推送下的数据
                             kMoreEntity.clear();
                             KLineEntity lineEntity = new KLineEntity();
                             lineEntity.Date = kBean.getTime();
@@ -156,11 +153,11 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                             lineEntity.Low = kBean.getLowestPrice();
                             lineEntity.Volume = kBean.getVolume();
                             kMoreEntity.add(lineEntity);
-                            Log.d("jiejie","-" + kMoreEntity.get(0).toString());
+                            DataHelper.calculate(kMoreEntity);
                             KLineFragment fragment = (KLineFragment) fragments.get(1);
                             fragment.setKHeaderData(kMoreEntity,false);
                            // fragment.setKHeaderData(DataHelper.getALL(kMoreEntity), false);
-                        }
+                   //     }
                     }
                 });
             }
@@ -443,6 +440,7 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         map.put("to", String.valueOf(to));
         map.put("resolution", resolution);
         mPresenter.KData(map); // 发起网络请求
+       mPresenter.text(symbol,String.valueOf(from),String.valueOf(to),resolution);
     }
 
     /**

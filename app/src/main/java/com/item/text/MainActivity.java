@@ -23,9 +23,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btnOne).setOnClickListener(this);
         findViewById(R.id.btnTwo).setOnClickListener(this);
         findViewById(R.id.btnThree).setOnClickListener(this);
-        NiceSpinner niceSpinner = findViewById(R.id.nice_spinner);
-        List<String> dataSet = new LinkedList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
-        niceSpinner.attachDataSource(dataSet);
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import com.github.fujianlian.klinechart.formatter.DateFormatter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.item.text.R;
+import com.item.text.data.KSocketBean;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -56,6 +58,15 @@ public class TextOneActivity extends AppCompatActivity {
     Button kText;
     private KLineChartAdapter mAdapter;
 
+    private static String text = " {\n" +
+            "    \"Close\": \"153.350006\",\n" +
+            "    \"Date\": \"2016/10/27\",\n" +
+            "    \"High\": \"154.059998\",\n" +
+            "    \"Low\": \"152.020004\",\n" +
+            "    \"Open\": \"152.820007\",\n" +
+            "    \"Volume\": \"4126800\"\n" +
+            "  }";
+
     public static void show(Activity activity) {
         Intent intent = new Intent(activity, TextOneActivity.class);
         activity.startActivity(intent);
@@ -68,8 +79,51 @@ public class TextOneActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initView();
         initData();
+        findViewById(R.id.text).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+setText();
+            }
+        });
     }
 
+    private void setText(){
+        KLineEntity entity = new Gson().fromJson(text,KLineEntity.class);
+       final List<KLineEntity> datas = new ArrayList<>();
+        datas.add(entity);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.addHeaderData(datas);
+                        mAdapter.notifyDataSetChanged();
+                        mKChartView.refreshEnd();
+                    }
+                });
+            }
+        }).start();
+    }
+    public static ArrayList<KLineEntity> getAll() {
+        ArrayList<KLineEntity> datas = new ArrayList<>();
+        final KSocketBean kBean = new Gson().fromJson(text, KSocketBean.class);
+        KLineEntity lineEntity = new KLineEntity();
+        lineEntity.Date = kBean.getTime();
+        lineEntity.Open = kBean.getOpenPrice();
+        lineEntity.Close = kBean.getClosePrice();
+        lineEntity.High = kBean.getHighestPrice();
+        lineEntity.Low = kBean.getLowestPrice();
+       // lineEntity.Volume = kBean.getVolume();
+//        datas = new Gson().fromJson(getStringFromAssert(context, name),
+//                new TypeToken<List<KLineEntity>>() {
+//                }.getType());
+        for (int i =0 ;i<600;i++){
+            datas.add(lineEntity);
+        }
+       DataHelper.calculate(datas);
+        return datas;
+    }
     private void initView() {
         mAdapter = new KLineChartAdapter();
         mKChartView.setAdapter(mAdapter);
@@ -88,6 +142,8 @@ public class TextOneActivity extends AppCompatActivity {
             @Override
             public void run() {
                 final ArrayList<KLineEntity> datas = getAll(TextOneActivity.this,"ibm.json");
+              //  final ArrayList<KLineEntity> datas = getAll();
+                Log.d("jiejie","---" + datas.size()+ "---"+ datas.get(0).getOpenPrice() + " --" + datas.get(0).getRsi()+"  " + datas.get(0).getK());
                 DataHelper.calculate(datas);
                 runOnUiThread(new Runnable() {
                     @Override

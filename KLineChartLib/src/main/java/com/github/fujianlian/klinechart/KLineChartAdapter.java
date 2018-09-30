@@ -47,6 +47,7 @@ public class KLineChartAdapter extends BaseKLineChartAdapter {
         if (data != null && !data.isEmpty()) {
             datas.clear();
             datas.addAll(0, data);
+            notifyDataSetChanged();
         }
     }
 

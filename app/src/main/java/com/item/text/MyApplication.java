@@ -18,6 +18,6 @@ public class MyApplication extends Application{
         // 这个是xutils需要的
         x.Ext.init(this);
         // 是否打开log方便调试用的
-        x.Ext.setDebug(true);
+       // x.Ext.setDebug(true);
     }
 }

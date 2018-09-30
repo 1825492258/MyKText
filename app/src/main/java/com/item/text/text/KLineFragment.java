@@ -95,7 +95,6 @@ public class KLineFragment extends Fragment {
         if (data != null) {
             DataHelper.calculate(data);
             mAdapter.addHeaderData(data);
-            mAdapter.notifyDataSetChanged();
             if (isAnimation) mKChartView.startAnimation();
             mKChartView.refreshEnd();
         } else {
@@ -118,7 +117,6 @@ public class KLineFragment extends Fragment {
             mKChartView.justShowLoading();
             DataHelper.calculate(data);
             mAdapter.addFooterData(data);
-            mAdapter.notifyDataSetChanged();
             if (isAnimation) mKChartView.startAnimation();
             mKChartView.refreshEnd();
         } else {

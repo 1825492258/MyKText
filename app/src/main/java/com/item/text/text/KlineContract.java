@@ -25,5 +25,7 @@ public interface KlineContract {
         void KData(HashMap<String, String> map);
 
         void onDestroy();
+
+        void text(String symbol,String from,String to,String resolution);
     }
 }

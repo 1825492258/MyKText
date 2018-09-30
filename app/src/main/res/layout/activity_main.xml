@@ -23,21 +23,15 @@
         android:text="最简单的使用效果" />
 
     <Button
-        android:layout_width="match_parent"
         android:id="@+id/btnTwo"
-        android:text="如何调用"
-        android:layout_height="wrap_content" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="如何调用" />
 
     <Button
-        android:layout_width="match_parent"
         android:id="@+id/btnThree"
-        android:text="数据库操作"
-        android:layout_height="wrap_content" />
-    <org.angmarch.views.NiceSpinner
-        android:layout_width="wrap_content"
-        android:id="@+id/nice_spinner"
-        android:layout_margin="16dp"
-        android:visibility="gone"
-        android:background="#000"
-        android:layout_height="wrap_content" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="数据库操作" />
+
 </LinearLayout>
