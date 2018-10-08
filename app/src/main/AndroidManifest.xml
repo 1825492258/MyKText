@@ -28,7 +28,8 @@
             android:name=".text.TextMainActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait" />
-        <activity android:name=".db.ThreeActivity"></activity>
+
+        <service android:name=".socket.MarketService"/>
     </application>
 
 </manifest>

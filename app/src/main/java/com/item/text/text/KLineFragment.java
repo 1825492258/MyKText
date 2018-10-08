@@ -93,17 +93,16 @@ public class KLineFragment extends Fragment {
     public void setKHeaderData(ArrayList<KLineEntity> data, boolean isAnimation) {
         if (mKChartView == null) return;
         if (data != null) {
+            mKChartView.justShowLoading();
             DataHelper.calculate(data);
             mAdapter.addHeaderData(data);
-            mAdapter.notifyDataSetChanged();
             if (isAnimation) mKChartView.startAnimation();
             mKChartView.refreshEnd();
         } else {
+            mKChartView.justShowLoading();
             mAdapter.clearData();
-            mAdapter.notifyDataSetChanged();
             mKChartView.refreshEnd();
         }
-
     }
 
     /**
@@ -118,15 +117,13 @@ public class KLineFragment extends Fragment {
             mKChartView.justShowLoading();
             DataHelper.calculate(data);
             mAdapter.addFooterData(data);
-            mAdapter.notifyDataSetChanged();
             if (isAnimation) mKChartView.startAnimation();
             mKChartView.refreshEnd();
         } else {
+            mKChartView.justShowLoading();
             mAdapter.clearData();
-            mAdapter.notifyDataSetChanged();
             mKChartView.refreshEnd();
         }
-
     }
 
     /**

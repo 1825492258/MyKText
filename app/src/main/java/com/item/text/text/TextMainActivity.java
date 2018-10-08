@@ -26,7 +26,13 @@ import com.item.text.R;
 import com.item.text.data.KLineBean;
 import com.item.text.data.KSocketBean;
 import com.item.text.data.Utils;
+import com.item.text.socket.ISocket;
+import com.item.text.socket.SocketMessage;
+import com.item.text.socket.SocketResponse;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -108,6 +114,9 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_main);
         ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
+        EventBus.getDefault().post(new SocketMessage(0, ISocket.CMD.SUBSCRIBE_EXCHANGE_TRADE,
+                Utils.buildGetBodyJson("BTC/USDT").toString().getBytes()));
         mPresenter = new KlinePresenterImpl(this);
         isVertical = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
         fragments.add(KLineFragment.newInstance(true, 2)); // 这个是分时的
@@ -124,53 +133,41 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         // 默认加载1分钟的数据
         loadKineData(1);
         // 这里模拟推送，在1分钟时添加一条数据
-        findViewById(R.id.btnTextOne).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                textSocket();
-            }
-        });
     }
 
     private ArrayList<KLineEntity> kMoreEntity = new ArrayList<>(); // 推送来的数据
 
-    private void textSocket() {
-        // 解析需要在子线程
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // 这个是推送来的数据
-                String response = "{\"closePrice\":6503.930,\"count\":15,\"highestPrice\":6506.54000,\"lowestPrice\":6503.870,\"openPrice\":6506.540,\"period\":\"1min\",\"time\":1538120400000,\"turnover\":11639.097172000,\"volume\":1.789}";
-                final KSocketBean kBean = new Gson().fromJson(response, KSocketBean.class);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (kBean == null) return;
-                        if ("1min".equals(kBean.getPeriod())) { // 表示是一分钟推送下的数据
-                            kMoreEntity.clear();
-                            KLineEntity lineEntity = new KLineEntity();
-                            lineEntity.Date = kBean.getTime();
-                            lineEntity.Open = kBean.getOpenPrice();
-                            lineEntity.Close = kBean.getClosePrice();
-                            lineEntity.High = kBean.getHighestPrice();
-                            lineEntity.Low = kBean.getLowestPrice();
-                            lineEntity.Volume = kBean.getVolume();
-                            kMoreEntity.add(lineEntity);
-                            Log.d("jiejie","-" + kMoreEntity.get(0).toString());
-                            KLineFragment fragment = (KLineFragment) fragments.get(1);
-                            fragment.setKHeaderData(kMoreEntity,false);
-                           // fragment.setKHeaderData(DataHelper.getALL(kMoreEntity), false);
-                        }
-                    }
-                });
+    /**
+     * EventBus推送来的数据，并设置在主线程返回
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSocketMessage(SocketResponse response){
+        if(response.getCmd() == ISocket.CMD.PUSH_EXCHANGE_KLINE)   {
+            KSocketBean kBean = new Gson().fromJson(response.getResponse(), KSocketBean.class);
+            Log.d("jiejie", "K--" + response.getResponse());
+            if (kBean == null) return;
+            if ("1min".equals(kBean.getPeriod())) { // 表示推送下来的是 1min的 并且要判断推送来的信息和当前的币是不是一样
+                KLineEntity lineEntity = new KLineEntity();
+                lineEntity.Date = kBean.getTime();
+                lineEntity.Open = kBean.getOpenPrice();
+                lineEntity.Close = kBean.getClosePrice();
+                lineEntity.High = kBean.getHighestPrice();
+                lineEntity.Low = kBean.getLowestPrice();
+                lineEntity.Volume = kBean.getVolume();
+                kMoreEntity.add(lineEntity);
+                DataHelper.calculate(kMoreEntity);
+                KLineFragment fragment = (KLineFragment) fragments.get(1);
+                //fragment.setKHeaderData(kMoreEntity,false); // 按理说应该用这个方法，但是会出现线划不来的感觉，所以采用下面的方法
+                fragment.setKFooterData(kMoreEntity,false);
             }
-        }).start();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mPresenter != null) mPresenter.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     private int index;
@@ -222,7 +219,7 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
 
     private boolean isVertical;
 
-    @OnClick({R.id.ivBack, R.id.ivFullScreen, R.id.tvMore, R.id.tvIndex, R.id.tv30M, R.id.tvWeek, R.id.tvJan, R.id.tvMA, R.id.tvBOLL, R.id.tvMainHide, R.id.tvMACD, R.id.tvKDJ, R.id.tvRSI, R.id.tvChildHide})
+    @OnClick({R.id.ivBack, R.id.ivFullScreen, R.id.tvMore, R.id.tvIndex, R.id.tv15M,R.id.tv30M, R.id.tvWeek, R.id.tvJan, R.id.tvMA, R.id.tvBOLL, R.id.tvMainHide, R.id.tvMACD, R.id.tvKDJ, R.id.tvRSI, R.id.tvChildHide})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.ivBack: // 返回键
@@ -259,19 +256,24 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                 }
 
                 break;
+            case R.id.tv15M: // 15分钟
             case R.id.tv30M: // 30 分钟
             case R.id.tvWeek: // 1周
             case R.id.tvJan: // 1月
-                mRadioGroup.clearCheck(); // 清除上次的点击的状态
-                if (view.getId() == R.id.tv30M) {
+                mRadioGroup.clearCheck(); // 清除上次RadioGroup点击的状态
+                if(view.getId() == R.id.tv15M){
                     currentSymType = 5;
+                    index = 5;
+                    tvMore.setText(R.string.sw_min);
+                } else if (view.getId() == R.id.tv30M) {
+                    currentSymType = 6;
                     tvMore.setText(R.string.ts_min);
                 } else if (view.getId() == R.id.tvWeek) {
                     tvMore.setText(R.string.weekly);
-                    currentSymType = 6;
+                    currentSymType = 7;
                 } else {
                     tvMore.setText(R.string.jan);
-                    currentSymType = 7;
+                    currentSymType = 8;
                 }
                 tabPop.setVisibility(View.GONE);
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -385,12 +387,6 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         Long from = to;
         switch (type) {
             case 0: // 分时
-//                Calendar c = Calendar.getInstance();
-//                int hour = c.get(Calendar.HOUR_OF_DAY) - 6;
-//                c.set(Calendar.HOUR_OF_DAY, hour);
-//                String strDate = Utils.getFormatTime("HH:mm", c.getTime());
-//                String str = Utils.getFormatTime(null, c.getTime());
-//                from = Utils.getTimeMillis(null, str);
                 from = to - 24L * 60 * 60 * 1000;
                 resolution = 1 + "";
                 break;
@@ -410,19 +406,25 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                 from = to - 60 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "D";
                 break;
-            case 5: // 30分钟
+            case 5: // 15分钟
+                from = to - 15 * 2L * 6 * 60 * 60 * 1000;
+                resolution = 15 + "";
+                break;
+            case 6: // 30分钟
                 from = to - 12 * 24L * 60 * 60 * 1000;
                 resolution = 30 + "";
                 break;
-            case 6: // 1周
+            case 7: // 1周
                 from = to - 730 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "W";
                 break;
-            case 7: // 1月
+            case 8: // 1月
                 from = to - 1095 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "M";
                 break;
             default: // 默认
+                from = to - 24L * 60 * 60 * 1000;
+                resolution = 1 + "";
                 break;
         }
         getKLineData("BTC/USDT", from, to, resolution);
@@ -443,6 +445,7 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         map.put("to", String.valueOf(to));
         map.put("resolution", resolution);
         mPresenter.KData(map); // 发起网络请求
+       //mPresenter.text(symbol,String.valueOf(from),String.valueOf(to),resolution);
     }
 
     /**
@@ -451,8 +454,10 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
     @Override
     public void KDataSuccess(JSONArray obj) {
         final ArrayList<KLineEntity> data = getAll(obj);
-        if (data != null)
+        if (data != null){
             Log.d("jiejie", "da--" + data.size() + "---" + currentTabIndex);
+            if(currentTabIndex == 1) kMoreEntity = data; // 这里新加一条数据有问题，所以尝试这么写的
+        }
         // 下面的设置一定需要在主线程中设置 否则会有问题
         new Thread(new Runnable() {
             @Override
@@ -461,14 +466,13 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                     @Override
                     public void run() {
                         KLineFragment fragment = (KLineFragment) fragments.get(currentTabIndex); // 找到对应的Fragment，再在对应的Fragment上改变数据
-                        fragment.setMainDrawType(mainType);
-                        fragment.setChildDrawType(childType);
-                        fragment.setKFooterData(data, true);
+                        fragment.setMainDrawType(mainType); // 设置主图
+                        fragment.setChildDrawType(childType); // 设置幅图
+                        fragment.setKFooterData(data, true); // 添加数据
                     }
                 });
             }
         }).start();
-
     }
 
     @Override

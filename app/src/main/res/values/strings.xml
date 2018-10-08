@@ -6,6 +6,7 @@
     <string name="hide">隐藏</string>
     <string name="main">主图</string>
     <string name="child">副图</string>
+    <string name="sw_min">15分钟</string>
     <string name="ts_min">30分钟</string>
     <string name="weekly">一周</string>
     <string name="jan">一月</string>

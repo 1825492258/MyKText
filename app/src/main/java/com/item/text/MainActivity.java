@@ -1,18 +1,13 @@
 package com.item.text;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-import com.item.text.db.ThreeActivity;
 import com.item.text.demo.TextOneActivity;
+import com.item.text.socket.MarketService;
 import com.item.text.text.TextMainActivity;
-
-import org.angmarch.views.NiceSpinner;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -20,12 +15,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        startService(new Intent(this, MarketService.class));
         findViewById(R.id.btnOne).setOnClickListener(this);
         findViewById(R.id.btnTwo).setOnClickListener(this);
         findViewById(R.id.btnThree).setOnClickListener(this);
-        NiceSpinner niceSpinner = findViewById(R.id.nice_spinner);
-        List<String> dataSet = new LinkedList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
-        niceSpinner.attachDataSource(dataSet);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this,MarketService.class));
     }
 
     @Override
@@ -38,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 TextMainActivity.show(this);
                 break;
             case R.id.btnThree:
-                ThreeActivity.show(this);
+               // ThreeActivity.show(this);
                 break;
         }
     }

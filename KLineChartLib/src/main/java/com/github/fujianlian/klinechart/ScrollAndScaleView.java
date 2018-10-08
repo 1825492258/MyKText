@@ -179,8 +179,12 @@ public abstract class ScrollAndScaleView extends RelativeLayout implements
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (event.getPointerCount() == 1) {
-                    isLongPress = false;
-                    invalidate();
+//                    isLongPress = false;
+//                    invalidate();
+                    // 长按之后移动
+                    if(isLongPress){
+                        onLongPress(event);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -188,6 +192,7 @@ public abstract class ScrollAndScaleView extends RelativeLayout implements
                 break;
             case MotionEvent.ACTION_UP:
                 // isLongPress = false;
+                isLongPress = false;
                 if (x == event.getX()) {
                     onLongPress(event);
                 }
@@ -196,6 +201,7 @@ public abstract class ScrollAndScaleView extends RelativeLayout implements
                 break;
             case MotionEvent.ACTION_CANCEL:
                 //  isLongPress = false;
+                isLongPress = false;
                 touch = false;
                 invalidate();
                 break;

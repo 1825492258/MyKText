@@ -180,12 +180,12 @@
                 android:id="@+id/rb_oneM"
                 style="@style/radioButton"
                 android:checked="true"
-                android:text="1分时" />
+                android:text="1分钟" />
 
             <RadioButton
                 android:id="@+id/rb_fiveM"
                 style="@style/radioButton"
-                android:text="5分时" />
+                android:text="5分钟" />
 
             <RadioButton
                 android:id="@+id/rb_oneH"
@@ -267,6 +267,7 @@
         <Button
             android:id="@+id/btnTextOne"
             android:layout_marginTop="120dp"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:text="1分添一条数据"
             android:layout_height="wrap_content" />
