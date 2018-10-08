@@ -137,6 +137,9 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
 
     private ArrayList<KLineEntity> kMoreEntity = new ArrayList<>(); // 推送来的数据
 
+    /**
+     * EventBus推送来的数据，并设置在主线程返回
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketMessage(SocketResponse response){
         if(response.getCmd() == ISocket.CMD.PUSH_EXCHANGE_KLINE)   {
@@ -216,7 +219,7 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
 
     private boolean isVertical;
 
-    @OnClick({R.id.ivBack, R.id.ivFullScreen, R.id.tvMore, R.id.tvIndex, R.id.tv30M, R.id.tvWeek, R.id.tvJan, R.id.tvMA, R.id.tvBOLL, R.id.tvMainHide, R.id.tvMACD, R.id.tvKDJ, R.id.tvRSI, R.id.tvChildHide})
+    @OnClick({R.id.ivBack, R.id.ivFullScreen, R.id.tvMore, R.id.tvIndex, R.id.tv15M,R.id.tv30M, R.id.tvWeek, R.id.tvJan, R.id.tvMA, R.id.tvBOLL, R.id.tvMainHide, R.id.tvMACD, R.id.tvKDJ, R.id.tvRSI, R.id.tvChildHide})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.ivBack: // 返回键
@@ -253,19 +256,24 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                 }
 
                 break;
+            case R.id.tv15M: // 15分钟
             case R.id.tv30M: // 30 分钟
             case R.id.tvWeek: // 1周
             case R.id.tvJan: // 1月
-                mRadioGroup.clearCheck(); // 清除上次的点击的状态
-                if (view.getId() == R.id.tv30M) {
+                mRadioGroup.clearCheck(); // 清除上次RadioGroup点击的状态
+                if(view.getId() == R.id.tv15M){
                     currentSymType = 5;
+                    index = 5;
+                    tvMore.setText(R.string.sw_min);
+                } else if (view.getId() == R.id.tv30M) {
+                    currentSymType = 6;
                     tvMore.setText(R.string.ts_min);
                 } else if (view.getId() == R.id.tvWeek) {
                     tvMore.setText(R.string.weekly);
-                    currentSymType = 6;
+                    currentSymType = 7;
                 } else {
                     tvMore.setText(R.string.jan);
-                    currentSymType = 7;
+                    currentSymType = 8;
                 }
                 tabPop.setVisibility(View.GONE);
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -379,12 +387,6 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
         Long from = to;
         switch (type) {
             case 0: // 分时
-//                Calendar c = Calendar.getInstance();
-//                int hour = c.get(Calendar.HOUR_OF_DAY) - 6;
-//                c.set(Calendar.HOUR_OF_DAY, hour);
-//                String strDate = Utils.getFormatTime("HH:mm", c.getTime());
-//                String str = Utils.getFormatTime(null, c.getTime());
-//                from = Utils.getTimeMillis(null, str);
                 from = to - 24L * 60 * 60 * 1000;
                 resolution = 1 + "";
                 break;
@@ -404,19 +406,25 @@ public class TextMainActivity extends AppCompatActivity implements RadioGroup.On
                 from = to - 60 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "D";
                 break;
-            case 5: // 30分钟
+            case 5: // 15分钟
+                from = to - 15 * 2L * 6 * 60 * 60 * 1000;
+                resolution = 15 + "";
+                break;
+            case 6: // 30分钟
                 from = to - 12 * 24L * 60 * 60 * 1000;
                 resolution = 30 + "";
                 break;
-            case 6: // 1周
+            case 7: // 1周
                 from = to - 730 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "W";
                 break;
-            case 7: // 1月
+            case 8: // 1月
                 from = to - 1095 * 24L * 60 * 60 * 1000;
                 resolution = 1 + "M";
                 break;
             default: // 默认
+                from = to - 24L * 60 * 60 * 1000;
+                resolution = 1 + "";
                 break;
         }
         getKLineData("BTC/USDT", from, to, resolution);

@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="chart_red">#eb4f4a</color>
-    <color name="chart_green">#00c391</color>
+    <color name="chart_red">#00c391</color>
+    <color name="chart_green">#eb4f4a</color>
     <color name="chart_line">#C9933E</color>
     <color name="chart_line_background">#1aC9933E</color>
 

@@ -32,7 +32,7 @@ public class KlinePresenterImpl implements KlineContract.Presenter {
     public void KData(HashMap<String, String> map) {
         if (view != null) view.showDialog();
         OkGo.<String>post(url)
-                .cacheKey("text" + map.get("symbol") + map.get("resolution")) // 这句很重要，设置对应的缓存的Key
+                .cacheKey("text" + map.get("symbol") + map.get("resolution")) // 这句很重要，保证key唯一,否则数据会发生覆盖
                 .cacheMode(CacheMode.FIRST_CACHE_THEN_REQUEST) // 缓存模式先使用缓存然后使用网络数据
                 .params(map).execute(new StringCallback() {
             @Override
